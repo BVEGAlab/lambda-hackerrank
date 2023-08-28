@@ -111,7 +111,7 @@ func GenerateCandidateTestSQL(candidates []structures.CandidateResponse) error {
                     tagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_tag (tag_name) VALUES ('%s');\n", tag)
                     tagFile.WriteString(tagSQL)
 
-                    crossTagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_cross_tag (attempt_id, tag_id, score) VALUES ('%s', '%s', '%s');\n", candidate.ID, tag, candidate.Score_tags_split[tag])
+                    crossTagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_cross_tag (attempt_id, tag_id, score) VALUES ('%s', (SELECT id_tag FROM hard_skills.tbl_tag WHERE tag_name = '%s' LIMIT 1), '%s');\n", candidate.ID, tag, candidate.Score_tags_split[tag])
                     crossTagFile.WriteString(crossTagSQL)
                 }
             }
