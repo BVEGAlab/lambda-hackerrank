@@ -2,12 +2,13 @@ package lambdas
 
 import (
     "context"
-
-
-    "github.com/aws/aws-lambda-go/events"
+    "hacker-rank-lambda/src/controllers"
 )
 
-func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (string, error) {
-    // in development
-    return "hello world", nil
+func Handler(ctx context.Context) (string, error) {
+    err := controllers.HackerRankController()
+    if err != nil {
+        return "", err
+    }
+    return "Success", nil
 }
