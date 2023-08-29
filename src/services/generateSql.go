@@ -20,12 +20,13 @@ func GenerateTestSQL(tests []structures.Tests) error {
     
 
     for _, test := range tests {
+        name := strings.ReplaceAll(test.Name, "'", "")
         sql := fmt.Sprintf("INSERT INTO hard_skills.tbl_test (id_test, name, duration, locked, state, tags) VALUES ('%s', '%s', %d, %t, '%s', ARRAY%s::text[]);\n",
             test.ID,
-            strings.ReplaceAll(test.Name, "'", "''"),
+            name,
             test.Duration,
             test.Locked,
-            test.State,
+            strings.ReplaceAll(test.State, "'", ""),
             utils.FormatArray(test.Tags),
         )
         file.WriteString(sql)
@@ -45,9 +46,9 @@ func GenerateCandidateSQL(candidates []structures.CandidateResponse) error {
     for _, candidateResponse := range candidates {
         for _, candidate := range candidateResponse.Data {
             sql := fmt.Sprintf("INSERT INTO hard_skills.tbl_candidate (id_candidate, email, full_name) VALUES ('%s', '%s', '%s');\n",
-                candidate.ID,
-                candidate.Email,
-                candidate.Full_name,
+                strings.ReplaceAll(candidate.ID, "'", ""),
+                strings.ReplaceAll(candidate.Email, "'", ""),
+                strings.ReplaceAll(candidate.Full_name, "'", ""),
             )
             file.WriteString(sql)
         }
@@ -63,7 +64,7 @@ func GenerateCandidateTestSQL(candidates []structures.CandidateResponse) error {
         return err
     }
     defer candidateTestFile.Close()
-
+    tagMap := make(map[string]bool)
     tagFile, err := os.Create("Tag.sh")
     if err != nil {
         return err
@@ -86,11 +87,11 @@ func GenerateCandidateTestSQL(candidates []structures.CandidateResponse) error {
             }
 
             questionsJSON, _ := json.Marshal(questionsFloat)
-            
+
             candidateTestSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_candidate_test (id_test, email, attempt_id, score, attempt_starttime, attempt_endtime, invited_on, pdf_url, score_tags_split, questions, feedback, percentage_score) VALUES ('%s', '%s', '%s', %f, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %f);\n",
-                candidate.Test_id,
-                candidate.Email,
-                candidate.ID,
+                strings.ReplaceAll(candidate.Test_id, "'", ""),
+                strings.ReplaceAll(candidate.Email, "'", ""),
+                strings.ReplaceAll(candidate.ID, "'", ""),
                 candidate.Score,
                 candidate.Attempt_starttime,
                 candidate.Attempt_endtime,
@@ -98,20 +99,23 @@ func GenerateCandidateTestSQL(candidates []structures.CandidateResponse) error {
                 candidate.Pdf_url,
                 scoreTagsSplitJSON,
                 questionsJSON,
-                candidate.Feedback,
+                strings.ReplaceAll(candidate.Feedback, "\n", " "),
                 candidate.Percentage_score,
             )
             candidateTestFile.WriteString(candidateTestSQL)
 
             var tags []string
             for tag := range candidate.Score_tags_split {
+                if _, ok := tagMap[tag]; !ok {
+                    tagMap[tag] = true
+
+                    tagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_tag (id, tag_name) SELECT COALESCE(MAX(CAST(id AS INTEGER)), 0) + 1, '%s' FROM hard_skills.tbl_tag WHERE NOT EXISTS (SELECT 1 FROM hard_skills.tbl_tag WHERE tag_name = '%s');\n", tag, tag)
+                    tagFile.WriteString(tagSQL)
+                }
                 if !contains(tags, tag) {
                     tags = append(tags, tag)
 
-                    tagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_tag (tag_name) VALUES ('%s');\n", tag)
-                    tagFile.WriteString(tagSQL)
-
-                    crossTagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_cross_tag (attempt_id, tag_id, score) VALUES ('%s', (SELECT id_tag FROM hard_skills.tbl_tag WHERE tag_name = '%s' LIMIT 1), '%s');\n", candidate.ID, tag, candidate.Score_tags_split[tag])
+                    crossTagSQL := fmt.Sprintf("INSERT INTO hard_skills.tbl_cross_tag (attempt_id, tag_id, score) VALUES ('%s', (SELECT id FROM hard_skills.tbl_tag WHERE tag_name = '%s' LIMIT 1), '%s');\n", candidate.ID, tag, candidate.Score_tags_split[tag])
                     crossTagFile.WriteString(crossTagSQL)
                 }
             }

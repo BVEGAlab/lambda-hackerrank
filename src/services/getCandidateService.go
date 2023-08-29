@@ -6,6 +6,7 @@ import (
 	"hacker-rank-lambda/src/structures"
 	"io/ioutil"
 	"net/http"
+    "strings"
 	"time"
 )
 
@@ -68,6 +69,14 @@ func GetCandidates(test_id string) (structures.CandidateResponse, error) {
 				if err != nil {
 					panic(err)
 				}
+
+                for tag, score := range attemptResponse.Model.ScoresTagsSplit {
+                    newTag := strings.ReplaceAll(tag, "'", "")
+                    if newTag != tag {
+                        attemptResponse.Model.ScoresTagsSplit[newTag] = score
+                        delete(attemptResponse.Model.ScoresTagsSplit, tag)
+                    }
+                }
 			
                 candidates = append(candidates, structures.CandidateData{
                     ID:                candidate.ID,
