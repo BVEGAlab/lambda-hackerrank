@@ -12,9 +12,6 @@ se requiere:
 
 - Instalar golang
 - Ejecutar pwd (en mac) para saber el path donde se encuentra el proyecto
-- exportar las variables de ambiente (en PATH, es donde se instalo go)
-export GOPATH=(valor de pwd, pero sin la carpeta del proyecto) /
-export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin 
 - obtener la cookie 
 - obtener el id de los test a descargar
 
