@@ -6,36 +6,34 @@ This is not the final document, it is a work in progress.
 
 # API explanation
 
-- Get test
+Esta aplicacion tiene la funcionalidad de automatizar las descargar la informacion de los test que se requieran, en conjunto con la los resultados de los candidatos y sus datos.
 
-    https://www.hackerrank.com/x/api/v3/tests?limit=<number, must be more than zero>&offset=<number>
+se requiere:
 
-    This api returns a list of tests, the limit is the number of tests that you want to get and the offset is the number of tests that you want to skip.
+- Instalar golang
+- Ejecutar pwd (en mac) para saber el path donde se encuentra el proyecto
+- exportar las variables de ambiente (en PATH, es donde se instalo go)
+export GOPATH=(valor de pwd, pero sin la carpeta del proyecto) /
+export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin 
+- obtener la cookie 
+- obtener el id de los test a descargar
 
-    example: https://www.hackerrank.com/x/api/v3/tests?limit=2&offset=0
+ejecucion en mac:
 
-    In that example we are getting the first two tests.
+1. Descargar el proyecto localmente
 
-    example: https://www.hackerrank.com/x/api/v3/tests?limit=2&offset=2
+2. Abrir terminal dentro del proyect 
 
-    In that example we are getting the third and fourth tests.
+3. Ejecutar pwd
 
-- Get candidates
+4. ejecutar en terminal (o ponerlo en las variables de ambiente para no tener que hacer este paso siempre que se vaya a ejecutar):
+export GOPATH=(valor de pwd, pero sin la carpeta del proyecto) /
+export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin 
 
-    https://www.hackerrank.com/x/api/v3/tests/{test_id obligatory}/candidates?limit={number, must be more than zero}&offset={number}
+5. agregar la cookie en src/env.go en la parte de TOKEN, donde esta el string vacio.
 
-    This api returns a list of candidates, the limit is the number of candidates that you want to get and the offset is the number of candidates that you want to skip.
-    
-    it have the same example as the Get Test
+6. agregar el id en TESTS_TO_SEARCH en src/env.go, ejemplo: []string{"123","456","789"}
 
-- Get pdf
+7. ejecutar en terminal: gon run main.go
 
-    https://www.hackerrank.com/x/tests/{test_id obligatory}/candidates/{candidate id}/pdf
-
-    candidate id example: "id": "1234556",
-
-    " status
-    This indicates the current status of the candidate. Can be between -1 to 7. -1 indicates that candidate is currently invited, while 7 indicates that candidates has completed the test and a report has been generated for the candidate. All other intermediate states are internal and should not be used. "
-
-    when the user status is 7, this will have a pdf
-
+8. Esto generara el scripts y una carpeta con la fecha del dia, con los las respuestas obtenidas de los test como jsons.
