@@ -8,7 +8,7 @@ import (
 
 var (
     TOKEN           = getEnv("token", "")
-    TESTS_TO_SEARCH = getEnvSlice("tests_to_search", []string{""})
+    TESTS_TO_SEARCH = getEnvSlice("tests_to_search", []string{"123","456","789"})
     DB_CONNECTION   = getEnv("db_connection", "")
 )
 

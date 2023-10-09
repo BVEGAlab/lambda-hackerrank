@@ -2,15 +2,25 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"hacker-rank-lambda/src/apis"
 	"hacker-rank-lambda/src/structures"
 	"io/ioutil"
 	"net/http"
-    "strings"
+	"os"
+	"strings"
 	"time"
 )
 
 func GetCandidates(test_id string) (structures.CandidateResponse, error) {
+
+    today := time.Now().Format("02-01-2006")
+    folderName := fmt.Sprintf("./%s/candidates_json/%s", today, test_id)
+    err := os.MkdirAll(folderName, 0755)
+    if err != nil {
+        panic(err)
+    }
+
     offset := 0
 
 
@@ -25,7 +35,7 @@ func GetCandidates(test_id string) (structures.CandidateResponse, error) {
     var candidates []structures.CandidateData
 
     for {
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
         resp, err := client.Do(req)
         if err != nil {
             panic(err)
@@ -37,11 +47,29 @@ func GetCandidates(test_id string) (structures.CandidateResponse, error) {
             panic(err)
         }
 
+        candidateFileName := fmt.Sprintf("%s/%s.json", folderName, "candidates_test"+test_id+"_offset"+fmt.Sprintf("%d", offset))
+        candidateFile, err := os.Create(candidateFileName)
+        if err != nil {
+            panic(err)
+        }
+        defer candidateFile.Close()
+
+        _, err = candidateFile.Write(bodyBytes)
+        if err != nil {
+            panic(err)
+        }
+
         var candidatesResponse structures.CandidateResponse
 
         err = json.Unmarshal(bodyBytes, &candidatesResponse)
         if err != nil {
             panic(err)
+        }
+
+        attemptFolderName := fmt.Sprintf("%s/candidateAttempScores", folderName)
+                err = os.MkdirAll(attemptFolderName, 0755)
+                if err != nil {
+                    panic(err)
         }
 
         for _, candidate := range candidatesResponse.Data {
@@ -51,7 +79,7 @@ func GetCandidates(test_id string) (structures.CandidateResponse, error) {
 				if err != nil {
 					panic(err)
 				}
-				time.Sleep(1 * time.Second)
+				time.Sleep(3 * time.Second)
 				attemptResp, err := client.Do(attemtReq)
 				if err != nil {
 					panic(err)
@@ -69,6 +97,22 @@ func GetCandidates(test_id string) (structures.CandidateResponse, error) {
 				if err != nil {
 					panic(err)
 				}
+
+                
+
+                attemptFileName := fmt.Sprintf("%s/%s.json", attemptFolderName, candidate.ID)
+                attemptFile, err := os.Create(attemptFileName)
+                if err != nil {
+                    panic(err)
+                }
+                defer attemptFile.Close()
+
+                _, err = attemptFile.Write(attemptBodyBytes)
+                if err != nil {
+                    panic(err)
+                }
+
+                
 
                 for tag, score := range attemptResponse.Model.ScoresTagsSplit {
                     newTag := strings.ReplaceAll(tag, "'", "")

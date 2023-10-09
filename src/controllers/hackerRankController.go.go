@@ -4,15 +4,24 @@ import (
 	"fmt"
 	"hacker-rank-lambda/src/middleware"
 	"hacker-rank-lambda/src/structures"
+	"os"
+	"time"
 )
 
 func HackerRankController() error {
-    fmt.Println("Controller called")
+    today := time.Now().Format("02-01-2006")
+    folderName := fmt.Sprintf("./%s", today)
+    err := os.Mkdir(folderName, 0755)
+    if err != nil {
+        fmt.Println("Error creating folder:", err)
+        return fmt.Errorf("Error creating folder: %v", err)
+    }
+    fmt.Println("Folder created:", folderName)
 
 	var testReponse []structures.Tests
 
-	testReponse, err := middleware.GetTest()
-	if err != nil {
+	testReponse, errtest := middleware.GetTest()
+	if errtest != nil {
 		fmt.Println("Error getting test:", err)
 		return fmt.Errorf("Error getting test: %v", err)
 	}
@@ -33,9 +42,9 @@ func HackerRankController() error {
 
     fmt.Println("SQL generated successfully!")
 
-	err = middleware.InsertsShToDatabase()
+	//err = middleware.InsertsShToDatabase()
 
-	fmt.Println("Inserts.sh executed successfully!")
+	//fmt.Println("Inserts.sh executed successfully!")
 
     return nil
 }

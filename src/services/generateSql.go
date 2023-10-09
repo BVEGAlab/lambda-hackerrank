@@ -99,7 +99,7 @@ func GenerateCandidateTestSQL(candidates []structures.CandidateResponse) error {
                 candidate.Pdf_url,
                 scoreTagsSplitJSON,
                 questionsJSON,
-                strings.ReplaceAll(candidate.Feedback, "\n", " "),
+                strings.ReplaceAll(strings.ReplaceAll(candidate.Feedback, "'", ""), "\n", " "),
                 candidate.Percentage_score,
             )
             candidateTestFile.WriteString(candidateTestSQL)
